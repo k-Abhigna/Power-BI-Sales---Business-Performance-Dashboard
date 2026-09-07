@@ -1,0 +1,2121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Sales Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #0078D4;
+            --profit-green: #107C10;
+            --target-orange: #FFB900;
+            --teal: #00B4EF;
+            --red: #D83B01;
+            --yellow: #FFC914;
+            --bg-light: #F3F2F1;
+            --text-dark: #333;
+            --text-gray: #666;
+            --white: #fff;
+            --border-gray: #D0D0D0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--border-gray);
+            padding: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .navbar-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            padding: 0;
+        }
+
+        .navbar-brand {
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-blue);
+            flex: 1;
+        }
+
+        .navbar-nav {
+            display: flex;
+            gap: 0;
+            list-style: none;
+        }
+
+        .nav-item {
+            border-right: 1px solid var(--border-gray);
+        }
+
+        .nav-link {
+            display: block;
+            padding: 20px 15px;
+            color: var(--text-gray);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background-color: var(--bg-light);
+            color: var(--primary-blue);
+        }
+
+        .nav-link.active {
+            color: var(--primary-blue);
+            border-bottom: 3px solid var(--primary-blue);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .header {
+            background-color: var(--white);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-gray);
+            text-transform: uppercase;
+        }
+
+        .filter-control {
+            padding: 8px 12px;
+            border: 1px solid var(--border-gray);
+            border-radius: 4px;
+            font-size: 13px;
+            background-color: var(--white);
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reset {
+            background-color: var(--text-gray);
+            color: var(--white);
+        }
+
+        .btn-reset:hover {
+            background-color: var(--text-dark);
+        }
+
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background-color: var(--white);
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .kpi-card.profit {
+            border-left-color: var(--profit-green);
+        }
+
+        .kpi-card.target {
+            border-left-color: var(--target-orange);
+        }
+
+        .kpi-card.efficiency {
+            border-left-color: var(--teal);
+        }
+
+        .kpi-card.customers {
+            border-left-color: #6B46C1;
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .kpi-comparison {
+            font-size: 12px;
+            color: var(--profit-green);
+            font-weight: 600;
+        }
+
+        .kpi-comparison.negative {
+            color: var(--red);
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            background-color: var(--white);
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .chart-canvas {
+            position: relative;
+            height: 300px;
+        }
+
+        .table-container {
+            background-color: var(--white);
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: var(--bg-light);
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--border-gray);
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-gray);
+            font-size: 13px;
+            color: var(--text-dark);
+        }
+
+        tr:hover {
+            background-color: var(--bg-light);
+        }
+
+        .status-green {
+            color: var(--profit-green);
+            font-weight: 600;
+        }
+
+        .status-yellow {
+            color: var(--yellow);
+            font-weight: 600;
+        }
+
+        .status-red {
+            color: var(--red);
+            font-weight: 600;
+        }
+
+        .insights-box {
+            background-color: #E8F4F8;
+            border-left: 4px solid var(--teal);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .insights-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .insight-item {
+            font-size: 13px;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .insight-item:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--profit-green);
+            font-weight: bold;
+        }
+
+        .insight-item.warning:before {
+            content: '⚠';
+            color: var(--target-orange);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .stats-summary {
+            background-color: var(--white);
+            padding: 15px 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 30px;
+            font-size: 13px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-gray);
+            font-size: 12px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-nav {
+                display: none;
+            }
+
+            .kpi-container {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-control {
+                width: 100%;
+            }
+
+            .stats-summary {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+
+        .error {
+            background-color: #FCE4E4;
+            border-left: 4px solid var(--red);
+            padding: 15px;
+            border-radius: 4px;
+            color: var(--red);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">📊 Sales & Performance Dashboard</div>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="switchPage(0)">Executive Overview</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="switchPage(1)">Sales Analysis</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="switchPage(2)">Customer Analysis</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="switchPage(3)">Profitability</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="switchPage(4)">Forecast</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="switchPage(5)">Transactions</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- PAGE 1: EXECUTIVE OVERVIEW -->
+        <div class="page active">
+            <div class="header">
+                <div class="header-title">Executive Overview</div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label class="filter-label">Year:</label>
+                        <select class="filter-control" id="yearFilter" onchange="refreshDashboard()">
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Region:</label>
+                        <select class="filter-control" id="regionFilter" onchange="refreshDashboard()">
+                            <option value="">All Regions</option>
+                            <option value="North">North</option>
+                            <option value="South">South</option>
+                            <option value="East">East</option>
+                            <option value="West">West</option>
+                            <option value="Central">Central</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-reset" onclick="resetFilters()">Reset Filters</button>
+                </div>
+            </div>
+
+            <div class="kpi-container">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Sales</div>
+                    <div class="kpi-value" id="kpi1">$0M</div>
+                    <div class="kpi-comparison" id="kpi1-change">↑ +0% YoY</div>
+                </div>
+                <div class="kpi-card profit">
+                    <div class="kpi-label">Gross Profit</div>
+                    <div class="kpi-value" id="kpi2">$0M</div>
+                    <div class="kpi-comparison" id="kpi2-change">↑ +0% YoY</div>
+                </div>
+                <div class="kpi-card efficiency">
+                    <div class="kpi-label">Gross Margin %</div>
+                    <div class="kpi-value" id="kpi3">0%</div>
+                    <div class="kpi-comparison" id="kpi3-change">0 pp change</div>
+                </div>
+                <div class="kpi-card target">
+                    <div class="kpi-label">YoY Growth %</div>
+                    <div class="kpi-value" id="kpi4">+0%</div>
+                    <div class="kpi-comparison" id="kpi4-change">vs Prior Year</div>
+                </div>
+                <div class="kpi-card target">
+                    <div class="kpi-label">Target Achievement</div>
+                    <div class="kpi-value" id="kpi5">0%</div>
+                    <div class="kpi-comparison" id="kpi5-change">of annual goal</div>
+                </div>
+                <div class="kpi-card customers">
+                    <div class="kpi-label">Total Customers</div>
+                    <div class="kpi-value" id="kpi6">0</div>
+                    <div class="kpi-comparison" id="kpi6-change">active accounts</div>
+                </div>
+            </div>
+
+            <div class="insights-box">
+                <div class="insights-title">📊 Executive Insights</div>
+                <div class="insight-item" id="insight1">Sales data loading...</div>
+                <div class="insight-item" id="insight2"></div>
+                <div class="insight-item" id="insight3"></div>
+                <div class="insight-item warning" id="insight4"></div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Monthly Sales Trend</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartSalesTrend"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Sales by Region</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartRegion"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Sales by Product Category</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartCategory"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Monthly Profit Trend</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartProfit"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container full-width">
+                <div class="chart-title">Top 10 Customers</div>
+                <div class="table-container">
+                    <table id="topCustomersTable">
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Segment</th>
+                                <th>Total Sales</th>
+                                <th>Orders</th>
+                                <th>% of Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topCustomersBody">
+                            <tr><td colspan="5" class="loading">Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: SALES ANALYSIS -->
+        <div class="page">
+            <div class="header">
+                <div class="header-title">Sales Analysis</div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label class="filter-label">Month:</label>
+                        <select class="filter-control" id="monthFilter" onchange="refreshDashboard()">
+                            <option value="">All Months</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-reset" onclick="resetFilters()">Reset</button>
+                </div>
+            </div>
+
+            <div class="stats-summary">
+                <div class="stat-item">
+                    <div class="stat-label">Total Sales</div>
+                    <div class="stat-value" id="salesAnalysisSales">$0M</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value" id="salesAnalysisOrders">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Avg Order Value</div>
+                    <div class="stat-value" id="salesAnalysisAOV">$0K</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Quantity</div>
+                    <div class="stat-value" id="salesAnalysisQty">0</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Sales by Month</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartSalesByMonth"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Sales by Region (2024)</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartSalesByRegion"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Top Salespeople</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartTopSalesreps"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Product Category Performance</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartCategoryPerformance"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container full-width">
+                <div class="chart-title">Sales Performance by Salesperson</div>
+                <div class="table-container">
+                    <table id="salesTable">
+                        <thead>
+                            <tr>
+                                <th>Salesperson</th>
+                                <th>Region</th>
+                                <th>Total Sales</th>
+                                <th># Orders</th>
+                                <th>Avg Order Value</th>
+                                <th>% of Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTableBody">
+                            <tr><td colspan="6" class="loading">Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 3: CUSTOMER ANALYSIS -->
+        <div class="page">
+            <div class="header">
+                <div class="header-title">Customer Analysis</div>
+            </div>
+
+            <div class="kpi-container">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Customers</div>
+                    <div class="kpi-value" id="custTotalCount">0</div>
+                </div>
+                <div class="kpi-card profit">
+                    <div class="kpi-label">Avg Revenue per Customer</div>
+                    <div class="kpi-value" id="custAvgRevenue">$0K</div>
+                </div>
+                <div class="kpi-card efficiency">
+                    <div class="kpi-label">Revenue per Order</div>
+                    <div class="kpi-value" id="custRevPerOrder">$0K</div>
+                </div>
+                <div class="kpi-card target">
+                    <div class="kpi-label">Repeat Customer Rate</div>
+                    <div class="kpi-value" id="custRepeatRate">0%</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Customer Growth Trend</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartCustomerGrowth"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Customers by Segment</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartCustomerSegment"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Customers by City</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartCustomerCity"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Revenue Distribution</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartRevenueDistribution"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container full-width">
+                <div class="chart-title">Top 15 Customers by Revenue</div>
+                <div class="table-container">
+                    <table id="customerTable">
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Segment</th>
+                                <th>City, State</th>
+                                <th>Total Sales</th>
+                                <th>Orders</th>
+                                <th>% of Total Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerTableBody">
+                            <tr><td colspan="6" class="loading">Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 4: PROFITABILITY -->
+        <div class="page">
+            <div class="header">
+                <div class="header-title">Profitability Analysis</div>
+            </div>
+
+            <div class="kpi-container">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Sales</div>
+                    <div class="kpi-value" id="profSales">$0M</div>
+                </div>
+                <div class="kpi-card profit">
+                    <div class="kpi-label">Total Cost</div>
+                    <div class="kpi-value" id="profCost">$0M</div>
+                </div>
+                <div class="kpi-card efficiency">
+                    <div class="kpi-label">Gross Profit</div>
+                    <div class="kpi-value" id="profProfit">$0M</div>
+                </div>
+                <div class="kpi-card target">
+                    <div class="kpi-label">Gross Margin %</div>
+                    <div class="kpi-value" id="profMargin">0%</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Margin by Region</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartMarginRegion"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Margin by Product Category</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartMarginCategory"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Profit Trend</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartProfitTrend"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Margin by Customer Segment</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartMarginSegment"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container full-width">
+                <div class="chart-title">Profitability by Product</div>
+                <div class="table-container">
+                    <table id="profitTable">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Units Sold</th>
+                                <th>Total Sales</th>
+                                <th>Total Cost</th>
+                                <th>Profit</th>
+                                <th>Margin %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profitTableBody">
+                            <tr><td colspan="7" class="loading">Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 5: FORECAST -->
+        <div class="page">
+            <div class="header">
+                <div class="header-title">Forecast & Targets</div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label class="filter-label">Region:</label>
+                        <select class="filter-control" id="forecastRegionFilter" onchange="refreshDashboard()">
+                            <option value="">All Regions</option>
+                            <option value="North">North</option>
+                            <option value="South">South</option>
+                            <option value="East">East</option>
+                            <option value="West">West</option>
+                            <option value="Central">Central</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-container">
+                <div class="kpi-card">
+                    <div class="kpi-label">YTD Sales</div>
+                    <div class="kpi-value" id="forecastYTD">$0M</div>
+                </div>
+                <div class="kpi-card target">
+                    <div class="kpi-label">YTD Target</div>
+                    <div class="kpi-value" id="forecastTarget">$0M</div>
+                </div>
+                <div class="kpi-card profit">
+                    <div class="kpi-label">Achievement %</div>
+                    <div class="kpi-value" id="forecastAchieve">0%</div>
+                </div>
+                <div class="kpi-card efficiency">
+                    <div class="kpi-label">Annual Forecast</div>
+                    <div class="kpi-value" id="forecastAnnual">$0M</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container full-width">
+                    <div class="chart-title">Actual vs Target vs Forecast (2024)</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartForecast"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Target Achievement by Region</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartTargetByRegion"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Cumulative Sales vs Target</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartCumulativeSales"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container full-width">
+                <div class="chart-title">Monthly Performance vs Target</div>
+                <div class="table-container">
+                    <table id="targetTable">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Actual Sales</th>
+                                <th>Target Sales</th>
+                                <th>Variance ($)</th>
+                                <th>Achievement %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="targetTableBody">
+                            <tr><td colspan="5" class="loading">Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 6: TRANSACTIONS -->
+        <div class="page">
+            <div class="header">
+                <div class="header-title">Transaction Detail</div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label class="filter-label">Search:</label>
+                        <input type="text" class="filter-control" id="transactionSearch" placeholder="Customer, Product, Order..." onkeyup="refreshDashboard()">
+                    </div>
+                    <button class="btn btn-reset" onclick="resetFilters()">Clear</button>
+                </div>
+            </div>
+
+            <div class="stats-summary">
+                <div class="stat-item">
+                    <div class="stat-label">Total Records</div>
+                    <div class="stat-value" id="transCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Sales</div>
+                    <div class="stat-value" id="transSales">$0M</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Profit</div>
+                    <div class="stat-value" id="transProfit">$0M</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Avg Margin %</div>
+                    <div class="stat-value" id="transMargin">0%</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="transactionTable">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Discount</th>
+                            <th>Sales</th>
+                            <th>Cost</th>
+                            <th>Profit</th>
+                            <th>Margin %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionTableBody">
+                        <tr><td colspan="11" class="loading">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>📊 Power BI Sales & Business Performance Dashboard | Portfolio Project for Interview Preparation</p>
+            <p>Data generated for demonstration purposes | 2023-2024</p>
+        </div>
+    </div>
+
+    <script>
+        let allData = {
+            sales: [],
+            customers: [],
+            products: [],
+            salespeople: [],
+            regions: [],
+            dates: [],
+            targets: []
+        };
+
+        // Initialize Dashboard
+        async function initDashboard() {
+            await loadAllData();
+            refreshDashboard();
+        }
+
+        async function loadAllData() {
+            try {
+                const files = ['FactSales', 'DimCustomer', 'DimProduct', 'DimSalesperson', 'DimRegion', 'DimDate', 'DimTarget'];
+
+                for (const file of files) {
+                    const response = await fetch(`data/raw/${file}.csv`);
+                    const csv = await response.text();
+                    const data = Papa.parse(csv, { header: true, dynamicTyping: true });
+
+                    switch(file) {
+                        case 'FactSales': allData.sales = data.data; break;
+                        case 'DimCustomer': allData.customers = data.data; break;
+                        case 'DimProduct': allData.products = data.data; break;
+                        case 'DimSalesperson': allData.salespeople = data.data; break;
+                        case 'DimRegion': allData.regions = data.data; break;
+                        case 'DimDate': allData.dates = data.data; break;
+                        case 'DimTarget': allData.targets = data.data; break;
+                    }
+                }
+
+                console.log('Data loaded successfully');
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.querySelector('.error')?.remove();
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.innerHTML = '⚠️ Error loading data. Make sure CSV files are in the data/raw/ folder.';
+                document.querySelector('.container').insertBefore(errorDiv, document.querySelector('.header'));
+            }
+        }
+
+        function switchPage(pageNum) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+            document.querySelectorAll('.page')[pageNum].classList.add('active');
+            document.querySelectorAll('.nav-link')[pageNum].classList.add('active');
+
+            refreshDashboard();
+        }
+
+        function getFilters() {
+            return {
+                year: document.getElementById('yearFilter')?.value,
+                region: document.getElementById('regionFilter')?.value,
+                month: document.getElementById('monthFilter')?.value,
+                forecastRegion: document.getElementById('forecastRegionFilter')?.value,
+                search: document.getElementById('transactionSearch')?.value || ''
+            };
+        }
+
+        function resetFilters() {
+            document.getElementById('yearFilter').value = '2024';
+            document.getElementById('regionFilter').value = '';
+            document.getElementById('monthFilter').value = '';
+            document.getElementById('forecastRegionFilter').value = '';
+            document.getElementById('transactionSearch').value = '';
+            refreshDashboard();
+        }
+
+        function refreshDashboard() {
+            const activePage = Array.from(document.querySelectorAll('.page')).findIndex(p => p.classList.contains('active'));
+
+            switch(activePage) {
+                case 0: updateExecutiveOverview(); break;
+                case 1: updateSalesAnalysis(); break;
+                case 2: updateCustomerAnalysis(); break;
+                case 3: updateProfitability(); break;
+                case 4: updateForecast(); break;
+                case 5: updateTransactions(); break;
+            }
+        }
+
+        function formatCurrency(num) {
+            if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
+            if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`;
+            return `$${num.toFixed(0)}`;
+        }
+
+        function formatPercent(num) {
+            return (num * 100).toFixed(1) + '%';
+        }
+
+        // PAGE 1: Executive Overview
+        function updateExecutiveOverview() {
+            const filters = getFilters();
+            let filtered = allData.sales.filter(s => s.Year == filters.year);
+            if (filters.region) filtered = filtered.filter(s => {
+                const reg = allData.regions.find(r => r.RegionID == s.RegionID);
+                return reg?.Region === filters.region;
+            });
+
+            const totalSales = filtered.reduce((sum, s) => sum + (s.Sales || 0), 0);
+            const totalCost = filtered.reduce((sum, s) => sum + (s.Cost * s.Quantity || 0), 0);
+            const profit = totalSales - totalCost;
+            const margin = totalSales > 0 ? profit / totalSales : 0;
+            const customers = new Set(filtered.map(s => s.CustomerID)).size;
+
+            // Previous year comparison
+            let prevYearFiltered = allData.sales.filter(s => s.Year == filters.year - 1);
+            if (filters.region) prevYearFiltered = prevYearFiltered.filter(s => {
+                const reg = allData.regions.find(r => r.RegionID == s.RegionID);
+                return reg?.Region === filters.region;
+            });
+            const prevYearSales = prevYearFiltered.reduce((sum, s) => sum + (s.Sales || 0), 0);
+            const prevYearProfit = prevYearFiltered.reduce((sum, s) => sum + (s.Profit || 0), 0);
+            const prevYearCustomers = new Set(prevYearFiltered.map(s => s.CustomerID)).size;
+
+            const yoyGrowth = prevYearSales > 0 ? (totalSales - prevYearSales) / prevYearSales : 0;
+            const profitGrowth = prevYearProfit > 0 ? (profit - prevYearProfit) / prevYearProfit : 0;
+
+            // Update KPIs
+            document.getElementById('kpi1').textContent = formatCurrency(totalSales);
+            document.getElementById('kpi1-change').textContent = `↑ +${(yoyGrowth * 100).toFixed(1)}% YoY`;
+
+            document.getElementById('kpi2').textContent = formatCurrency(profit);
+            document.getElementById('kpi2-change').textContent = `↑ +${(profitGrowth * 100).toFixed(1)}% YoY`;
+
+            document.getElementById('kpi3').textContent = (margin * 100).toFixed(1) + '%';
+
+            document.getElementById('kpi4').textContent = `+${(yoyGrowth * 100).toFixed(1)}%`;
+
+            document.getElementById('kpi5').textContent = '85%'; // Placeholder
+
+            document.getElementById('kpi6').textContent = customers;
+            document.getElementById('kpi6-change').textContent = `+${customers - prevYearCustomers} new customers`;
+
+            // Insights
+            const topRegion = [...new Set(filtered.map(s => s.RegionID))].reduce((best, rId) => {
+                const regionSales = filtered.filter(s => s.RegionID === rId).reduce((sum, s) => sum + s.Sales, 0);
+                const bestSales = filtered.filter(s => s.RegionID === best).reduce((sum, s) => sum + s.Sales, 0);
+                return regionSales > bestSales ? rId : best;
+            });
+
+            const topRegionName = allData.regions.find(r => r.RegionID === topRegion)?.Region || 'N/A';
+
+            document.getElementById('insight1').textContent = `✓ Sales grew ${(yoyGrowth * 100).toFixed(1)}% YoY to ${formatCurrency(totalSales)}`;
+            document.getElementById('insight2').textContent = `✓ Gross margin at ${(margin * 100).toFixed(1)}% - healthy profitability`;
+            document.getElementById('insight3').textContent = `✓ ${topRegionName} region leading with ${formatCurrency(filtered.filter(s => s.RegionID === topRegion).reduce((sum, s) => sum + s.Sales, 0))}`;
+            document.getElementById('insight4').textContent = `⚠ Monitor pricing strategy as volume increased`;
+
+            // Charts
+            updateChart1();
+            updateChartByRegion();
+            updateChartByCategory();
+            updateChartProfit();
+            updateTopCustomers();
+        }
+
+        // PAGE 2: Sales Analysis
+        function updateSalesAnalysis() {
+            const filtered = allData.sales;
+            const totalSales = filtered.reduce((sum, s) => sum + (s.Sales || 0), 0);
+            const totalOrders = filtered.length;
+            const aov = totalOrders > 0 ? totalSales / totalOrders : 0;
+            const totalQty = filtered.reduce((sum, s) => sum + (s.Quantity || 0), 0);
+
+            document.getElementById('salesAnalysisSales').textContent = formatCurrency(totalSales);
+            document.getElementById('salesAnalysisOrders').textContent = totalOrders;
+            document.getElementById('salesAnalysisAOV').textContent = formatCurrency(aov);
+            document.getElementById('salesAnalysisQty').textContent = totalQty;
+
+            updateChartSalesByMonth();
+            updateChartSalesByRegion2();
+            updateChartTopSalesreps();
+            updateChartCategoryPerformance();
+            updateSalesTable();
+        }
+
+        // PAGE 3: Customer Analysis
+        function updateCustomerAnalysis() {
+            const customers = new Set(allData.sales.map(s => s.CustomerID));
+            const totalCustomers = customers.size;
+            const totalSales = allData.sales.reduce((sum, s) => sum + (s.Sales || 0), 0);
+            const avgRevenue = totalSales / totalCustomers;
+            const totalOrders = allData.sales.length;
+            const revPerOrder = totalSales / totalOrders;
+
+            document.getElementById('custTotalCount').textContent = totalCustomers;
+            document.getElementById('custAvgRevenue').textContent = formatCurrency(avgRevenue);
+            document.getElementById('custRevPerOrder').textContent = formatCurrency(revPerOrder);
+            document.getElementById('custRepeatRate').textContent = ((totalOrders / totalCustomers).toFixed(2)) + 'x';
+
+            updateChartCustomerGrowth();
+            updateChartCustomerSegment();
+            updateChartCustomerCity();
+            updateChartRevenueDistribution();
+            updateCustomerTable();
+        }
+
+        // PAGE 4: Profitability
+        function updateProfitability() {
+            const totalSales = allData.sales.reduce((sum, s) => sum + (s.Sales || 0), 0);
+            const totalCost = allData.sales.reduce((sum, s) => sum + (s.Cost * s.Quantity || 0), 0);
+            const profit = totalSales - totalCost;
+            const margin = totalSales > 0 ? profit / totalSales : 0;
+
+            document.getElementById('profSales').textContent = formatCurrency(totalSales);
+            document.getElementById('profCost').textContent = formatCurrency(totalCost);
+            document.getElementById('profProfit').textContent = formatCurrency(profit);
+            document.getElementById('profMargin').textContent = (margin * 100).toFixed(1) + '%';
+
+            updateChartMarginRegion();
+            updateChartMarginCategory();
+            updateChartProfitTrend();
+            updateChartMarginSegment();
+            updateProfitTable();
+        }
+
+        // PAGE 5: Forecast
+        function updateForecast() {
+            const filtered = allData.sales.filter(s => s.Year === 2024);
+            const ytdSales = filtered.reduce((sum, s) => sum + (s.Sales || 0), 0);
+            const ytdTarget = filtered.length * 5; // Placeholder calculation
+
+            document.getElementById('forecastYTD').textContent = formatCurrency(ytdSales);
+            document.getElementById('forecastTarget').textContent = formatCurrency(ytdTarget);
+            document.getElementById('forecastAchieve').textContent = ((ytdSales / ytdTarget) * 100).toFixed(0) + '%';
+            document.getElementById('forecastAnnual').textContent = formatCurrency(ytdSales * 1.1);
+
+            updateChartForecast();
+            updateChartTargetByRegion();
+            updateChartCumulativeSales();
+            updateTargetTable();
+        }
+
+        // PAGE 6: Transactions
+        function updateTransactions() {
+            const filters = getFilters();
+            let filtered = allData.sales;
+
+            if (filters.search) {
+                const searchLower = filters.search.toLowerCase();
+                filtered = filtered.filter(s => {
+                    const cust = allData.customers.find(c => c.CustomerID === s.CustomerID)?.CustomerName || '';
+                    const prod = allData.products.find(p => p.ProductID === s.ProductID)?.ProductName || '';
+                    return cust.toLowerCase().includes(searchLower) ||
+                           prod.toLowerCase().includes(searchLower) ||
+                           s.OrderID.toString().includes(searchLower);
+                });
+            }
+
+            const totalSales = filtered.reduce((sum, s) => sum + (s.Sales || 0), 0);
+            const totalProfit = filtered.reduce((sum, s) => sum + (s.Profit || 0), 0);
+            const avgMargin = filtered.length > 0 ?
+                filtered.reduce((sum, s) => sum + ((s.Profit || 0) / (s.Sales || 1)), 0) / filtered.length : 0;
+
+            document.getElementById('transCount').textContent = filtered.length;
+            document.getElementById('transSales').textContent = formatCurrency(totalSales);
+            document.getElementById('transProfit').textContent = formatCurrency(totalProfit);
+            document.getElementById('transMargin').textContent = (avgMargin * 100).toFixed(1) + '%';
+
+            updateTransactionTable(filtered);
+        }
+
+        // Chart Functions
+        let chartInstances = {};
+
+        function createOrUpdateChart(canvasId, config) {
+            if (chartInstances[canvasId]) {
+                chartInstances[canvasId].destroy();
+            }
+            const canvas = document.getElementById(canvasId);
+            if (canvas) {
+                chartInstances[canvasId] = new Chart(canvas, config);
+            }
+        }
+
+        function updateChart1() {
+            const monthlySales = {};
+            allData.sales.forEach(s => {
+                const key = s.YearMonth || 'Unknown';
+                monthlySales[key] = (monthlySales[key] || 0) + (s.Sales || 0);
+            });
+
+            const labels = Object.keys(monthlySales).sort();
+            const data = labels.map(k => monthlySales[k]);
+
+            createOrUpdateChart('chartSalesTrend', {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Monthly Sales',
+                        data: data,
+                        borderColor: '#0078D4',
+                        backgroundColor: 'rgba(0, 120, 212, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K' } }
+                    }
+                }
+            });
+        }
+
+        function updateChartByRegion() {
+            const regionSales = {};
+            allData.sales.forEach(s => {
+                const reg = allData.regions.find(r => r.RegionID === s.RegionID);
+                const name = reg?.Region || 'Unknown';
+                regionSales[name] = (regionSales[name] || 0) + (s.Sales || 0);
+            });
+
+            const labels = Object.keys(regionSales);
+            const data = labels.map(k => regionSales[k]);
+            const colors = ['#0078D4', '#107C10', '#FFB900', '#00B4EF', '#D83B01'];
+
+            createOrUpdateChart('chartRegion', {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        function updateChartByCategory() {
+            const catSales = {};
+            allData.sales.forEach(s => {
+                const prod = allData.products.find(p => p.ProductID === s.ProductID);
+                const cat = prod?.Category || 'Unknown';
+                catSales[cat] = (catSales[cat] || 0) + (s.Sales || 0);
+            });
+
+            const labels = Object.keys(catSales).sort((a, b) => catSales[b] - catSales[a]);
+            const data = labels.map(k => catSales[k]);
+
+            createOrUpdateChart('chartCategory', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales by Category',
+                        data: data,
+                        backgroundColor: '#0078D4'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K' } } }
+                }
+            });
+        }
+
+        function updateChartProfit() {
+            const monthlyProfit = {};
+            allData.sales.forEach(s => {
+                const key = s.YearMonth || 'Unknown';
+                monthlyProfit[key] = (monthlyProfit[key] || 0) + (s.Profit || 0);
+            });
+
+            const labels = Object.keys(monthlyProfit).sort();
+            const data = labels.map(k => monthlyProfit[k]);
+
+            createOrUpdateChart('chartProfit', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Monthly Profit',
+                        data: data,
+                        backgroundColor: '#107C10'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K' } } }
+                }
+            });
+        }
+
+        function updateTopCustomers() {
+            const custSales = {};
+            allData.sales.forEach(s => {
+                const cust = allData.customers.find(c => c.CustomerID === s.CustomerID);
+                const name = cust?.CustomerName || 'Unknown';
+                if (!custSales[name]) {
+                    custSales[name] = { sales: 0, orders: 0, segment: cust?.Segment || '' };
+                }
+                custSales[name].sales += s.Sales || 0;
+                custSales[name].orders += 1;
+            });
+
+            const sorted = Object.entries(custSales)
+                .sort((a, b) => b[1].sales - a[1].sales)
+                .slice(0, 10);
+
+            const totalSales = allData.sales.reduce((sum, s) => sum + (s.Sales || 0), 0);
+            const body = document.getElementById('topCustomersBody');
+            body.innerHTML = sorted.map(([name, data]) => `
+                <tr>
+                    <td>${name}</td>
+                    <td>${data.segment}</td>
+                    <td>${formatCurrency(data.sales)}</td>
+                    <td>${data.orders}</td>
+                    <td>${((data.sales / totalSales) * 100).toFixed(1)}%</td>
+                </tr>
+            `).join('');
+        }
+
+        function updateChartSalesByMonth() {
+            const monthlySales = {};
+            allData.sales.forEach(s => {
+                const key = s.YearMonth || 'Unknown';
+                monthlySales[key] = (monthlySales[key] || 0) + (s.Sales || 0);
+            });
+
+            const labels = Object.keys(monthlySales).sort();
+            const data = labels.map(k => monthlySales[k]);
+
+            createOrUpdateChart('chartSalesByMonth', {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales',
+                        data: data,
+                        borderColor: '#0078D4',
+                        backgroundColor: 'rgba(0, 120, 212, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K' } } }
+                }
+            });
+        }
+
+        function updateChartSalesByRegion2() {
+            const regionSales = {};
+            allData.sales.forEach(s => {
+                const reg = allData.regions.find(r => r.RegionID === s.RegionID);
+                const name = reg?.Region || 'Unknown';
+                regionSales[name] = (regionSales[name] || 0) + (s.Sales || 0);
+            });
+
+            const labels = Object.keys(regionSales).sort();
+            const data = labels.map(k => regionSales[k]);
+
+            createOrUpdateChart('chartSalesByRegion', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales',
+                        data: data,
+                        backgroundColor: '#0078D4'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K' } } }
+                }
+            });
+        }
+
+        function updateChartTopSalesreps() {
+            const repSales = {};
+            allData.sales.forEach(s => {
+                const rep = allData.salespeople.find(r => r.SalespersonID === s.SalespersonID);
+                const name = rep?.SalespersonName || 'Unknown';
+                repSales[name] = (repSales[name] || 0) + (s.Sales || 0);
+            });
+
+            const sorted = Object.entries(repSales)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            const labels = sorted.map(s => s[0]);
+            const data = sorted.map(s => s[1]);
+
+            createOrUpdateChart('chartTopSalesreps', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales',
+                        data: data,
+                        backgroundColor: '#107C10'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K' } } }
+                }
+            });
+        }
+
+        function updateChartCategoryPerformance() {
+            const catPerf = {};
+            allData.sales.forEach(s => {
+                const prod = allData.products.find(p => p.ProductID === s.ProductID);
+                const cat = prod?.Category || 'Unknown';
+                if (!catPerf[cat]) catPerf[cat] = { sales: 0, qty: 0 };
+                catPerf[cat].sales += s.Sales || 0;
+                catPerf[cat].qty += s.Quantity || 0;
+            });
+
+            const labels = Object.keys(catPerf);
+            const salesData = labels.map(k => catPerf[k].sales);
+            const qtyData = labels.map(k => catPerf[k].qty);
+
+            createOrUpdateChart('chartCategoryPerformance', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Sales ($)',
+                            data: salesData,
+                            backgroundColor: '#0078D4',
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Quantity',
+                            data: qtyData,
+                            backgroundColor: '#FFB900',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { type: 'linear', position: 'left', ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K' } },
+                        y1: { type: 'linear', position: 'right' }
+                    }
+                }
+            });
+        }
+
+        function updateSalesTable() {
+            const repData = {};
+            allData.sales.forEach(s => {
+                const rep = allData.salespeople.find(r => r.SalespersonID === s.SalespersonID);
+                const name = rep?.SalespersonName || 'Unknown';
+                const reg = allData.regions.find(r => r.RegionID === s.RegionID);
+                const region = reg?.Region || 'Unknown';
+
+                if (!repData[name]) {
+                    repData[name] = { region, sales: 0, orders: 0, aov: 0 };
+                }
+                repData[name].sales += s.Sales || 0;
+                repData[name].orders += 1;
+            });
+
+            const sorted = Object.entries(repData)
+                .sort((a, b) => b[1].sales - a[1].sales);
+
+            const totalSales = allData.sales.reduce((sum, s) => sum + (s.Sales || 0), 0);
+            const body = document.getElementById('salesTableBody');
+            body.innerHTML = sorted.map(([name, data]) => {
+                data.aov = data.sales / data.orders;
+                return `
+                    <tr>
+                        <td>${name}</td>
+                        <td>${data.region}</td>
+                        <td>${formatCurrency(data.sales)}</td>
+                        <td>${data.orders}</td>
+                        <td>${formatCurrency(data.aov)}</td>
+                        <td>${((data.sales / totalSales) * 100).toFixed(1)}%</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateChartCustomerGrowth() {
+            const custsByMonth = {};
+            allData.sales.forEach(s => {
+                const key = s.YearMonth || 'Unknown';
+                if (!custsByMonth[key]) custsByMonth[key] = new Set();
+                custsByMonth[key].add(s.CustomerID);
+            });
+
+            const labels = Object.keys(custsByMonth).sort();
+            const data = labels.map(k => custsByMonth[k].size);
+
+            createOrUpdateChart('chartCustomerGrowth', {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Active Customers',
+                        data: data,
+                        borderColor: '#107C10',
+                        backgroundColor: 'rgba(16, 124, 16, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function updateChartCustomerSegment() {
+            const segmentCusts = {};
+            const uniqueCusts = new Set(allData.sales.map(s => s.CustomerID));
+
+            uniqueCusts.forEach(custId => {
+                const cust = allData.customers.find(c => c.CustomerID === custId);
+                const seg = cust?.Segment || 'Unknown';
+                segmentCusts[seg] = (segmentCusts[seg] || 0) + 1;
+            });
+
+            const labels = Object.keys(segmentCusts);
+            const data = labels.map(k => segmentCusts[k]);
+            const colors = ['#0078D4', '#107C10', '#FFB900'];
+
+            createOrUpdateChart('chartCustomerSegment', {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right' } }
+                }
+            });
+        }
+
+        function updateChartCustomerCity() {
+            const cityCusts = {};
+            const uniqueCusts = new Set(allData.sales.map(s => s.CustomerID));
+
+            uniqueCusts.forEach(custId => {
+                const cust = allData.customers.find(c => c.CustomerID === custId);
+                const city = cust?.City || 'Unknown';
+                cityCusts[city] = (cityCusts[city] || 0) + 1;
+            });
+
+            const sorted = Object.entries(cityCusts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            const labels = sorted.map(c => c[0]);
+            const data = sorted.map(c => c[1]);
+
+            createOrUpdateChart('chartCustomerCity', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Customers',
+                        data: data,
+                        backgroundColor: '#00B4EF'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function updateChartRevenueDistribution() {
+            const custRev = {};
+            allData.sales.forEach(s => {
+                const cust = allData.customers.find(c => c.CustomerID === s.CustomerID);
+                const name = cust?.CustomerName || 'Unknown';
+                custRev[name] = (custRev[name] || 0) + (s.Sales || 0);
+            });
+
+            const sorted = Object.entries(custRev)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            const labels = sorted.map(c => c[0]);
+            const data = sorted.map(c => c[1]);
+
+            createOrUpdateChart('chartRevenueDistribution', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: data,
+                        backgroundColor: '#D83B01'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K' } } }
+                }
+            });
+        }
+
+        function updateCustomerTable() {
+            const custData = {};
+            allData.sales.forEach(s => {
+                const cust = allData.customers.find(c => c.CustomerID === s.CustomerID);
+                const name = cust?.CustomerName || 'Unknown';
+
+                if (!custData[name]) {
+                    custData[name] = {
+                        segment: cust?.Segment || '',
+                        city: cust?.City || '',
+                        state: cust?.State || '',
+                        sales: 0,
+                        orders: 0
+                    };
+                }
+                custData[name].sales += s.Sales || 0;
+                custData[name].orders += 1;
+            });
+
+            const sorted = Object.entries(custData)
+                .sort((a, b) => b[1].sales - a[1].sales)
+                .slice(0, 15);
+
+            const totalSales = allData.sales.reduce((sum, s) => sum + (s.Sales || 0), 0);
+            const body = document.getElementById('customerTableBody');
+            body.innerHTML = sorted.map(([name, data]) => `
+                <tr>
+                    <td>${name}</td>
+                    <td>${data.segment}</td>
+                    <td>${data.city}, ${data.state}</td>
+                    <td>${formatCurrency(data.sales)}</td>
+                    <td>${data.orders}</td>
+                    <td>${((data.sales / totalSales) * 100).toFixed(1)}%</td>
+                </tr>
+            `).join('');
+        }
+
+        function updateChartMarginRegion() {
+            const regionMargin = {};
+            allData.sales.forEach(s => {
+                const reg = allData.regions.find(r => r.RegionID === s.RegionID);
+                const name = reg?.Region || 'Unknown';
+
+                if (!regionMargin[name]) regionMargin[name] = { profit: 0, sales: 0 };
+                regionMargin[name].profit += s.Profit || 0;
+                regionMargin[name].sales += s.Sales || 0;
+            });
+
+            const labels = Object.keys(regionMargin).sort();
+            const data = labels.map(k => {
+                const margin = regionMargin[k].sales > 0 ? (regionMargin[k].profit / regionMargin[k].sales) * 100 : 0;
+                return margin;
+            });
+
+            createOrUpdateChart('chartMarginRegion', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Gross Margin %',
+                        data: data,
+                        backgroundColor: data.map(d => d > 40 ? '#107C10' : d > 30 ? '#FFB900' : '#D83B01')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { max: 100, ticks: { callback: v => v + '%' } } }
+                }
+            });
+        }
+
+        function updateChartMarginCategory() {
+            const catMargin = {};
+            allData.sales.forEach(s => {
+                const prod = allData.products.find(p => p.ProductID === s.ProductID);
+                const cat = prod?.Category || 'Unknown';
+
+                if (!catMargin[cat]) catMargin[cat] = { profit: 0, sales: 0 };
+                catMargin[cat].profit += s.Profit || 0;
+                catMargin[cat].sales += s.Sales || 0;
+            });
+
+            const labels = Object.keys(catMargin).sort();
+            const data = labels.map(k => {
+                const margin = catMargin[k].sales > 0 ? (catMargin[k].profit / catMargin[k].sales) * 100 : 0;
+                return margin;
+            });
+
+            createOrUpdateChart('chartMarginCategory', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Gross Margin %',
+                        data: data,
+                        backgroundColor: '#00B4EF'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { max: 100, ticks: { callback: v => v + '%' } } }
+                }
+            });
+        }
+
+        function updateChartProfitTrend() {
+            const monthlyProfit = {};
+            allData.sales.forEach(s => {
+                const key = s.YearMonth || 'Unknown';
+                monthlyProfit[key] = (monthlyProfit[key] || 0) + (s.Profit || 0);
+            });
+
+            const labels = Object.keys(monthlyProfit).sort();
+            const data = labels.map(k => monthlyProfit[k]);
+
+            createOrUpdateChart('chartProfitTrend', {
+                type: 'area',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Monthly Profit',
+                        data: data,
+                        borderColor: '#107C10',
+                        backgroundColor: 'rgba(16, 124, 16, 0.2)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K' } } }
+                }
+            });
+        }
+
+        function updateChartMarginSegment() {
+            const segMargin = {};
+            allData.sales.forEach(s => {
+                const cust = allData.customers.find(c => c.CustomerID === s.CustomerID);
+                const seg = cust?.Segment || 'Unknown';
+
+                if (!segMargin[seg]) segMargin[seg] = { profit: 0, sales: 0 };
+                segMargin[seg].profit += s.Profit || 0;
+                segMargin[seg].sales += s.Sales || 0;
+            });
+
+            const labels = Object.keys(segMargin);
+            const data = labels.map(k => {
+                const margin = segMargin[k].sales > 0 ? (segMargin[k].profit / segMargin[k].sales) * 100 : 0;
+                return margin;
+            });
+            const colors = ['#0078D4', '#107C10', '#FFB900'];
+
+            createOrUpdateChart('chartMarginSegment', {
+                type: 'doughnut',
+                data: {
+                    labels: labels.map((l, i) => `${l}\n${data[i].toFixed(1)}%`),
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right' } }
+                }
+            });
+        }
+
+        function updateProfitTable() {
+            const prodProfit = {};
+            allData.sales.forEach(s => {
+                const prod = allData.products.find(p => p.ProductID === s.ProductID);
+                const name = prod?.ProductName || 'Unknown';
+
+                if (!prodProfit[name]) {
+                    prodProfit[name] = {
+                        category: prod?.Category || '',
+                        qty: 0,
+                        sales: 0,
+                        cost: 0,
+                        profit: 0
+                    };
+                }
+                prodProfit[name].qty += s.Quantity || 0;
+                prodProfit[name].sales += s.Sales || 0;
+                prodProfit[name].cost += s.Cost * s.Quantity || 0;
+                prodProfit[name].profit += s.Profit || 0;
+            });
+
+            const sorted = Object.entries(prodProfit)
+                .sort((a, b) => b[1].profit - a[1].profit);
+
+            const body = document.getElementById('profitTableBody');
+            body.innerHTML = sorted.map(([name, data]) => {
+                const margin = data.sales > 0 ? (data.profit / data.sales) * 100 : 0;
+                return `
+                    <tr>
+                        <td>${name}</td>
+                        <td>${data.category}</td>
+                        <td>${data.qty}</td>
+                        <td>${formatCurrency(data.sales)}</td>
+                        <td>${formatCurrency(data.cost)}</td>
+                        <td>${formatCurrency(data.profit)}</td>
+                        <td ${margin > 40 ? 'class="status-green"' : margin > 30 ? '' : 'class="status-red"'}>${margin.toFixed(1)}%</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateChartForecast() {
+            const monthlyTarget = {};
+            const monthlySales = {};
+
+            allData.sales.forEach(s => {
+                const key = s.YearMonth || 'Unknown';
+                monthlySales[key] = (monthlySales[key] || 0) + (s.Sales || 0);
+            });
+
+            allData.targets.forEach(t => {
+                const key = t.YearMonth || `${t.Year}-${String(t.Month).padStart(2, '0')}`;
+                monthlyTarget[key] = (monthlyTarget[key] || 0) + (t.TargetSales || 0);
+            });
+
+            const labels = Object.keys(monthlySales).sort();
+            const sales = labels.map(k => monthlySales[k] || 0);
+            const targets = labels.map(k => monthlyTarget[k] || 100000);
+
+            createOrUpdateChart('chartForecast', {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Actual Sales',
+                            data: sales,
+                            borderColor: '#0078D4',
+                            backgroundColor: 'rgba(0, 120, 212, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Target',
+                            data: targets,
+                            borderColor: '#FFB900',
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true } },
+                    scales: { y: { ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'K' } } }
+                }
+            });
+        }
+
+        function updateChartTargetByRegion() {
+            const regionAchieve = {};
+            allData.sales.forEach(s => {
+                const reg = allData.regions.find(r => r.RegionID === s.RegionID);
+                const name = reg?.Region || 'Unknown';
+
+                if (!regionAchieve[name]) regionAchieve[name] = { sales: 0, target: 0 };
+                regionAchieve[name].sales += s.Sales || 0;
+                regionAchieve[name].target += 100000; // Simplified
+            });
+
+            const labels = Object.keys(regionAchieve).sort();
+            const achieve = labels.map(k => (regionAchieve[k].sales / regionAchieve[k].target) * 100);
+
+            createOrUpdateChart('chartTargetByRegion', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Achievement %',
+                        data: achieve,
+                        backgroundColor: achieve.map(a => a > 100 ? '#107C10' : a > 90 ? '#FFB900' : '#D83B01')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { max: 150, ticks: { callback: v => v + '%' } } }
+                }
+            });
+        }
+
+        function updateChartCumulativeSales() {
+            const monthlySales = {};
+            allData.sales.forEach(s => {
+                const key = s.YearMonth || 'Unknown';
+                monthlySales[key] = (monthlySales[key] || 0) + (s.Sales || 0);
+            });
+
+            const labels = Object.keys(monthlySales).sort();
+            let cumulative = 0;
+            const data = labels.map(k => {
+                cumulative += monthlySales[k];
+                return cumulative;
+            });
+
+            createOrUpdateChart('chartCumulativeSales', {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Cumulative Sales',
+                        data: data,
+                        borderColor: '#0078D4',
+                        backgroundColor: 'rgba(0, 120, 212, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { ticks: { callback: v => '$' + (v / 1000000).toFixed(1) + 'M' } } }
+                }
+            });
+        }
+
+        function updateTargetTable() {
+            const monthlyData = {};
+            allData.sales.forEach(s => {
+                const key = s.YearMonth || 'Unknown';
+                if (!monthlyData[key]) monthlyData[key] = { sales: 0, target: 100000 };
+                monthlyData[key].sales += s.Sales || 0;
+            });
+
+            const sorted = Object.entries(monthlyData).sort();
+            const body = document.getElementById('targetTableBody');
+            body.innerHTML = sorted.map(([month, data]) => {
+                const variance = data.sales - data.target;
+                const achieve = (data.sales / data.target) * 100;
+                return `
+                    <tr>
+                        <td>${month}</td>
+                        <td>${formatCurrency(data.sales)}</td>
+                        <td>${formatCurrency(data.target)}</td>
+                        <td ${variance >= 0 ? 'class="status-green"' : 'class="status-red"'}>${formatCurrency(variance)}</td>
+                        <td ${achieve >= 100 ? 'class="status-green"' : achieve >= 90 ? '' : 'class="status-red"'}>${achieve.toFixed(0)}%</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateTransactionTable(filtered) {
+            const body = document.getElementById('transactionTableBody');
+            body.innerHTML = filtered.slice(0, 100).map(s => {
+                const cust = allData.customers.find(c => c.CustomerID === s.CustomerID);
+                const prod = allData.products.find(p => p.ProductID === s.ProductID);
+                const margin = s.Sales > 0 ? (s.Profit / s.Sales) * 100 : 0;
+
+                return `
+                    <tr>
+                        <td>${s.OrderID}</td>
+                        <td>${s.OrderDate}</td>
+                        <td>${cust?.CustomerName || 'Unknown'}</td>
+                        <td>${prod?.ProductName || 'Unknown'}</td>
+                        <td>${s.Quantity}</td>
+                        <td>${formatCurrency(s.UnitPrice)}</td>
+                        <td>${(s.Discount * 100).toFixed(0)}%</td>
+                        <td>${formatCurrency(s.Sales)}</td>
+                        <td>${formatCurrency(s.Cost * s.Quantity)}</td>
+                        <td ${s.Profit >= 0 ? 'class="status-green"' : 'class="status-red"'}>${formatCurrency(s.Profit)}</td>
+                        <td ${margin > 40 ? 'class="status-green"' : margin > 20 ? '' : 'class="status-red"'}>${margin.toFixed(1)}%</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>
