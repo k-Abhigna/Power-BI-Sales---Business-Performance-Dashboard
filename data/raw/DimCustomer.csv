@@ -1,0 +1,101 @@
+CustomerID,CustomerName,Segment,City,State,Country
+1001,Customer 1,SMB,San Diego,IL,USA
+1002,Customer 2,Enterprise,San Diego,PA,USA
+1003,Customer 3,SMB,Chicago,CA,USA
+1004,Customer 4,SMB,New York,AZ,USA
+1005,Customer 5,Enterprise,San Diego,TX,USA
+1006,Customer 6,Enterprise,Chicago,CA,USA
+1007,Customer 7,SMB,Chicago,PA,USA
+1008,Customer 8,Mid-Market,New York,TX,USA
+1009,Customer 9,SMB,Phoenix,IL,USA
+1010,Customer 10,SMB,San Jose,IL,USA
+1011,Customer 11,SMB,San Antonio,NY,USA
+1012,Customer 12,SMB,San Jose,PA,USA
+1013,Customer 13,Enterprise,Dallas,AZ,USA
+1014,Customer 14,SMB,San Antonio,TX,USA
+1015,Customer 15,Mid-Market,Dallas,CA,USA
+1016,Customer 16,Enterprise,San Diego,PA,USA
+1017,Customer 17,Mid-Market,Los Angeles,PA,USA
+1018,Customer 18,Mid-Market,New York,IL,USA
+1019,Customer 19,Mid-Market,San Antonio,NY,USA
+1020,Customer 20,Mid-Market,San Antonio,NY,USA
+1021,Customer 21,Enterprise,San Diego,TX,USA
+1022,Customer 22,Enterprise,Phoenix,IL,USA
+1023,Customer 23,Mid-Market,Chicago,PA,USA
+1024,Customer 24,Mid-Market,San Diego,AZ,USA
+1025,Customer 25,Enterprise,Philadelphia,IL,USA
+1026,Customer 26,Enterprise,Chicago,TX,USA
+1027,Customer 27,Enterprise,New York,TX,USA
+1028,Customer 28,SMB,Chicago,IL,USA
+1029,Customer 29,SMB,Phoenix,TX,USA
+1030,Customer 30,SMB,Chicago,IL,USA
+1031,Customer 31,Mid-Market,New York,CA,USA
+1032,Customer 32,SMB,Phoenix,IL,USA
+1033,Customer 33,Mid-Market,San Jose,IL,USA
+1034,Customer 34,Mid-Market,San Antonio,TX,USA
+1035,Customer 35,SMB,San Antonio,TX,USA
+1036,Customer 36,Mid-Market,Dallas,NY,USA
+1037,Customer 37,SMB,San Jose,NY,USA
+1038,Customer 38,SMB,San Jose,CA,USA
+1039,Customer 39,Enterprise,Chicago,NY,USA
+1040,Customer 40,SMB,San Antonio,IL,USA
+1041,Customer 41,Enterprise,New York,TX,USA
+1042,Customer 42,SMB,Houston,NY,USA
+1043,Customer 43,SMB,Houston,NY,USA
+1044,Customer 44,Enterprise,Phoenix,CA,USA
+1045,Customer 45,Enterprise,San Antonio,PA,USA
+1046,Customer 46,SMB,San Antonio,CA,USA
+1047,Customer 47,Mid-Market,Houston,IL,USA
+1048,Customer 48,Enterprise,San Antonio,TX,USA
+1049,Customer 49,Mid-Market,Chicago,CA,USA
+1050,Customer 50,Mid-Market,Philadelphia,NY,USA
+1051,Customer 51,Mid-Market,Los Angeles,TX,USA
+1052,Customer 52,Enterprise,San Jose,TX,USA
+1053,Customer 53,Mid-Market,Dallas,NY,USA
+1054,Customer 54,Enterprise,Phoenix,CA,USA
+1055,Customer 55,Mid-Market,Philadelphia,NY,USA
+1056,Customer 56,SMB,Houston,PA,USA
+1057,Customer 57,SMB,San Jose,TX,USA
+1058,Customer 58,Enterprise,San Antonio,AZ,USA
+1059,Customer 59,SMB,Dallas,AZ,USA
+1060,Customer 60,SMB,San Antonio,IL,USA
+1061,Customer 61,Mid-Market,New York,NY,USA
+1062,Customer 62,Enterprise,New York,NY,USA
+1063,Customer 63,Mid-Market,Dallas,IL,USA
+1064,Customer 64,Mid-Market,Dallas,IL,USA
+1065,Customer 65,Mid-Market,Houston,IL,USA
+1066,Customer 66,Mid-Market,Dallas,TX,USA
+1067,Customer 67,Mid-Market,Chicago,PA,USA
+1068,Customer 68,Mid-Market,San Antonio,NY,USA
+1069,Customer 69,Mid-Market,Philadelphia,TX,USA
+1070,Customer 70,Enterprise,San Diego,IL,USA
+1071,Customer 71,SMB,Dallas,NY,USA
+1072,Customer 72,Mid-Market,Phoenix,TX,USA
+1073,Customer 73,Mid-Market,New York,PA,USA
+1074,Customer 74,Mid-Market,Chicago,TX,USA
+1075,Customer 75,Mid-Market,San Jose,PA,USA
+1076,Customer 76,Mid-Market,San Diego,IL,USA
+1077,Customer 77,Mid-Market,Philadelphia,PA,USA
+1078,Customer 78,SMB,San Diego,NY,USA
+1079,Customer 79,SMB,Dallas,IL,USA
+1080,Customer 80,Mid-Market,Houston,NY,USA
+1081,Customer 81,SMB,New York,AZ,USA
+1082,Customer 82,Enterprise,New York,CA,USA
+1083,Customer 83,Mid-Market,San Jose,PA,USA
+1084,Customer 84,Enterprise,Houston,CA,USA
+1085,Customer 85,Enterprise,San Antonio,CA,USA
+1086,Customer 86,Mid-Market,Los Angeles,PA,USA
+1087,Customer 87,SMB,Chicago,IL,USA
+1088,Customer 88,Enterprise,New York,AZ,USA
+1089,Customer 89,Mid-Market,Phoenix,NY,USA
+1090,Customer 90,Enterprise,New York,TX,USA
+1091,Customer 91,Enterprise,San Diego,NY,USA
+1092,Customer 92,Enterprise,New York,TX,USA
+1093,Customer 93,Enterprise,New York,NY,USA
+1094,Customer 94,SMB,Los Angeles,PA,USA
+1095,Customer 95,Enterprise,Los Angeles,AZ,USA
+1096,Customer 96,Enterprise,Philadelphia,TX,USA
+1097,Customer 97,Enterprise,San Antonio,IL,USA
+1098,Customer 98,SMB,Phoenix,NY,USA
+1099,Customer 99,Enterprise,New York,NY,USA
+1100,Customer 100,Enterprise,New York,TX,USA
