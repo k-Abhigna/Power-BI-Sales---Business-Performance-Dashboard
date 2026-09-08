@@ -1,0 +1,72 @@
+{
+  "project": {
+    "name": "Power BI Sales & Business Performance Dashboard",
+    "version": "1.0",
+    "description": "Professional BI dashboard for interview portfolio",
+    "language": "DAX, M",
+    "platforms": [
+      "Power BI Desktop (Windows)"
+    ],
+    "estimated_build_time_minutes": 180
+  },
+  "data": {
+    "fact_tables": [
+      {
+        "name": "FactSales",
+        "rows": 2500,
+        "columns": 12,
+        "file": "data/raw/FactSales.csv"
+      }
+    ],
+    "dimension_tables": [
+      {
+        "name": "DimDate",
+        "rows": 731,
+        "file": "data/raw/DimDate.csv"
+      },
+      {
+        "name": "DimCustomer",
+        "rows": 100,
+        "file": "data/raw/DimCustomer.csv"
+      },
+      {
+        "name": "DimProduct",
+        "rows": 50,
+        "file": "data/raw/DimProduct.csv"
+      },
+      {
+        "name": "DimSalesperson",
+        "rows": 25,
+        "file": "data/raw/DimSalesperson.csv"
+      },
+      {
+        "name": "DimRegion",
+        "rows": 5,
+        "file": "data/raw/DimRegion.csv"
+      },
+      {
+        "name": "DimTarget",
+        "rows": 120,
+        "file": "data/raw/DimTarget.csv"
+      }
+    ]
+  },
+  "model": {
+    "relationships": 5,
+    "measures": 20,
+    "pages": 6
+  },
+  "measures_by_category": {
+    "Core Metrics": 8,
+    "Time Intelligence": 8,
+    "Target & KPIs": 4
+  },
+  "pages": {
+    "1": "Executive Overview",
+    "2": "Sales Analysis",
+    "3": "Customer Analysis",
+    "4": "Profitability",
+    "5": "Forecast & Targets",
+    "6": "Transaction Details"
+  }
+}

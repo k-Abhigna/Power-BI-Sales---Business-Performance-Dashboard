@@ -1,0 +1,284 @@
+# ═════════════════════════════════════════════════════════════════════════════
+# POWER BI DASHBOARD BUILD CHECKLIST
+# ═════════════════════════════════════════════════════════════════════════════
+# Use this checklist to track progress while building your .pbix file
+# ═════════════════════════════════════════════════════════════════════════════
+
+## PHASE 1: DATA IMPORT & TRANSFORMATION (15-20 minutes)
+─────────────────────────────────────────────────────────
+
+### Import Data (5 min)
+  ☐ Open Power BI Desktop
+  ☐ Get Data → Text/CSV
+  ☐ Load FactSales.csv (2,500 rows)
+  ☐ Load DimDate.csv (731 rows)
+  ☐ Load DimCustomer.csv (100 rows)
+  ☐ Load DimProduct.csv (50 rows)
+  ☐ Load DimSalesperson.csv (25 rows)
+  ☐ Load DimRegion.csv (5 rows)
+  ☐ Load DimTarget.csv (120 rows)
+
+### Power Query Transformations (15 min)
+  ☐ Transform FactSales:
+    ☐ Remove duplicates on OrderID
+    ☐ Add Year column
+    ☐ Add Month column
+    ☐ Add Quarter column
+    ☐ Add YearMonth column
+  ☐ Transform DimDate:
+    ☐ Add DayOfWeek column
+    ☐ Add IsCurrentYear column
+  ☐ Transform Dimensions:
+    ☐ Trim all text columns
+    ☐ Remove duplicates
+
+### Data Validation
+  ☐ FactSales: 2,500 rows loaded
+  ☐ DimDate: 731 rows loaded
+  ☐ DimCustomer: 100 rows loaded
+  ☐ DimProduct: 50 rows loaded
+  ☐ DimSalesperson: 25 rows loaded
+  ☐ DimRegion: 5 rows loaded
+  ☐ DimTarget: 120 rows loaded
+  ☐ No error messages in Power Query
+
+
+## PHASE 2: DATA MODELING (10 minutes)
+──────────────────────────────────────
+
+### Create Relationships (5 min)
+  ☐ Switch to Model view
+  ☐ Create relationship: FactSales[OrderDate] → DimDate[Date]
+  ☐ Create relationship: FactSales[CustomerID] → DimCustomer[CustomerID]
+  ☐ Create relationship: FactSales[ProductID] → DimProduct[ProductID]
+  ☐ Create relationship: FactSales[SalespersonID] → DimSalesperson[SalespersonID]
+  ☐ Create relationship: FactSales[RegionID] → DimRegion[RegionID]
+
+### Mark Date Table (3 min)
+  ☐ Right-click DimDate → Mark as date table
+  ☐ Confirm date column: DimDate[Date]
+  ☐ Click OK
+
+### Verify Model
+  ☐ All 5 relationships created
+  ☐ All relationships are Many-to-One
+  ☐ All relationships are Single direction
+  ☐ No circular relationships
+  ☐ DimDate marked as date table
+
+
+## PHASE 3: CREATE DAX MEASURES (45 minutes)
+─────────────────────────────────────────────
+
+### Create Measures Table
+  ☐ Data view → Right-click → New Table
+  ☐ Enter: Measures = BLANK()
+  ☐ Create Measures table
+
+### Core Metrics (8 measures)
+  ☐ Total Sales
+  ☐ Total Cost
+  ☐ Gross Profit
+  ☐ Gross Margin %
+  ☐ Total Orders
+  ☐ Total Quantity
+  ☐ Total Customers
+  ☐ Average Order Value
+
+### Time Intelligence (8 measures)
+  ☐ Sales YTD
+  ☐ Sales MTD
+  ☐ Sales QTD
+  ☐ Sales PY
+  ☐ YoY Sales %
+  ☐ Sales L12M
+  ☐ Sales L3M
+  ☐ Profit Growth %
+
+### Target & KPIs (4 measures)
+  ☐ Target Sales
+  ☐ Target Achievement %
+  ☐ Variance to Target
+  ☐ Annual Forecast
+
+### Organize Measures
+  ☐ Assign all measures to Display Folders
+  ☐ Core Metrics folder created
+  ☐ Time Intelligence folder created
+  ☐ Target & KPIs folder created
+
+
+## PHASE 4: BUILD DASHBOARD PAGES (90 minutes)
+───────────────────────────────────────────────
+
+### Page 1: Executive Overview (30 min)
+  ☐ Create new page
+  ☐ Rename to "Executive Overview"
+  ☐ Add title text box
+
+  ☐ Add slicers:
+    ☐ Date slicer (Between range)
+    ☐ Region slicer (Buttons style)
+
+  ☐ Add KPI cards (row 1):
+    ☐ Total Sales
+    ☐ Gross Profit
+    ☐ Gross Margin %
+    ☐ YoY Growth %
+    ☐ Target Achievement %
+    ☐ Total Customers
+
+  ☐ Add charts (row 2):
+    ☐ Monthly Sales Trend (Line chart)
+    ☐ Sales by Region (Donut chart)
+
+  ☐ Add charts (row 3):
+    ☐ Sales by Category (Bar chart)
+    ☐ Monthly Profit Trend (Column chart)
+
+  ☐ Add table:
+    ☐ Top Customers table
+
+### Page 2: Sales Analysis (20 min)
+  ☐ Create new page
+  ☐ Rename to "Sales Analysis"
+  ☐ Add slicers: Month, Region, Category, Salesperson, Segment
+  ☐ Add charts: Sales by Month, Sales by Region, Top Salespeople, Category Performance
+  ☐ Add table: Sales Performance by Salesperson
+  ☐ Add stat cards
+
+### Page 3: Customer Analysis (20 min)
+  ☐ Create new page
+  ☐ Rename to "Customer Analysis"
+  ☐ Add KPI cards
+  ☐ Add charts: Growth Trend, Segment Distribution, City Distribution
+  ☐ Add table: Top 15 Customers
+
+### Page 4: Profitability (20 min)
+  ☐ Create new page
+  ☐ Rename to "Profitability"
+  ☐ Add KPI cards: Sales, Cost, Profit, Margin %
+  ☐ Add charts: Margin by Region, Margin by Product, Profit Trend, Margin by Segment
+  ☐ Add table: Profitability by Product
+
+### Page 5: Forecast & Targets (20 min)
+  ☐ Create new page
+  ☐ Rename to "Forecast & Targets"
+  ☐ Add region filter
+  ☐ Add KPI cards: YTD Sales, YTD Target, Achievement %, Annual Forecast
+  ☐ Add charts: Actual vs Target vs Forecast, Achievement by Region, Cumulative Sales
+  ☐ Add table: Monthly Performance vs Target
+
+### Page 6: Transaction Details (15 min)
+  ☐ Create new page
+  ☐ Rename to "Transaction Details"
+  ☐ Check: "Is drill-through page"
+  ☐ Add slicers: Region, Category, Customer, Salesperson
+  ☐ Add transaction detail table with all columns
+  ☐ Configure scroll and sorting
+
+
+## PHASE 5: SETUP DRILL-THROUGH & INTERACTIVITY (15 minutes)
+─────────────────────────────────────────────────────────
+
+### Configure Drill-Through Actions
+  ☐ Page 1 - Region Donut chart:
+    ☐ Format → Drill through
+    ☐ Enable "Allow drill-through"
+    ☐ Add field: DimRegion[Region]
+
+  ☐ Page 1 - Customer table:
+    ☐ Enable drill-through for DimCustomer[CustomerName]
+
+  ☐ Page 2 - Salesperson chart:
+    ☐ Enable drill-through for DimSalesperson[SalespersonName]
+
+  ☐ Repeat for other dimension charts
+
+### Test Interactivity
+  ☐ All slicers filter data
+  ☐ Drill-through actions work
+  ☐ KPIs update correctly
+  ☐ Charts respond to filters
+
+
+## PHASE 6: FORMATTING & FINALIZATION (15 minutes)
+──────────────────────────────────────────────────
+
+### Apply Formatting
+  ☐ File → Options → Global → Colors
+  ☐ Set color theme:
+    ☐ Primary: #0078D4 (Blue)
+    ☐ Secondary: #107C10 (Green)
+    ☐ Accent: #FFB900 (Gold)
+
+  ☐ Each page:
+    ☐ Set background: #F3F2F1 (Light Gray)
+    ☐ Configure text colors
+    ☐ Apply consistent formatting
+
+### Mobile Layout
+  ☐ View → Mobile layout
+  ☐ Resize all visuals for mobile
+  ☐ Test responsiveness
+
+### Final Save
+  ☐ File → Save As
+  ☐ Filename: Power BI Sales Dashboard.pbix
+  ☐ Location: Project root
+  ☐ Format: Power BI Workbook (.pbix)
+  ☐ Click Save
+
+
+## PHASE 7: QUALITY ASSURANCE & TESTING
+───────────────────────────────────────
+
+### Data Validation
+  ☐ Total Sales value is positive
+  ☐ YTD values are cumulative from Jan 1
+  ☐ YoY growth % calculated correctly
+  ☐ No division by zero errors
+  ☐ All dates in range 2023-2024
+
+### Model Validation
+  ☐ 5 relationships created
+  ☐ No circular relationships
+  ☐ DimDate marked as date table
+  ☐ Data types match (Int64 for IDs)
+  ☐ No nulls in foreign key columns
+
+### Dashboard Validation
+  ☐ Page 1: All 6 KPIs show data
+  ☐ Page 1: 4 charts render correctly
+  ☐ Page 1: Table shows data
+  ☐ Pages 2-5: All pages have data
+  ☐ Page 6: Drill-through page works
+  ☐ All slicers filter correctly
+  ☐ No blank or error values
+  ☐ Mobile layout responsive
+
+### Performance Check
+  ☐ Dashboard loads in <3 seconds
+  ☐ No lag when using slicers
+  ☐ Drill-through is responsive
+  ☐ All charts render smoothly
+
+
+## 🎉 COMPLETION
+─────────────
+
+  ☐ All phases completed
+  ☐ .pbix file saved
+  ☐ All tests passed
+  ☐ Dashboard ready for presentation!
+
+**Total Time: ~3 hours**
+
+─────────────────────────────────────────────────────────────────────────────
+Pro Tips:
+  • Copy/paste DAX from dax_measures_reference.txt (in this repo)
+  • Follow dashboard-design/ specs for exact visual layouts
+  • Test each page after creation before moving to next
+  • Save your work every 15 minutes
+  • Take screenshots of each completed page for documentation
+─────────────────────────────────────────────────────────────────────────────

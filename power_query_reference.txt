@@ -1,0 +1,67 @@
+# ═════════════════════════════════════════════════════════════════════════════
+# POWER QUERY M CODE REFERENCE
+# ═════════════════════════════════════════════════════════════════════════════
+
+## STEP 1: IMPORT DATA
+───────────────────────────────────────────────────────────────────────────────
+1. Open Power BI Desktop
+2. Home → Get Data → Text/CSV
+3. Select data/raw/FactSales.csv → Load
+4. Repeat for each CSV file in data/raw/:
+   - DimDate.csv
+   - DimCustomer.csv
+   - DimProduct.csv
+   - DimSalesperson.csv
+   - DimRegion.csv
+   - DimTarget.csv
+
+
+## STEP 2: APPLY POWER QUERY TRANSFORMATIONS
+───────────────────────────────────────────────────────────────────────────────
+
+### FactSales Transformations
+────────────────────────────
+1. Select all columns (keep all 12 columns)
+2. Remove Duplicates on OrderID
+3. Add Custom Column - Year:
+   = Date.Year([OrderDate])
+4. Add Custom Column - Month:
+   = Date.Month([OrderDate])
+5. Add Custom Column - Quarter:
+   = Date.Quarter([OrderDate])
+6. Add Custom Column - YearMonth:
+   = Text.From(Date.Year([OrderDate])) & "-" & Text.PadStart(Text.From(Date.Month([OrderDate])), 2, "0")
+
+### DimDate Transformations
+──────────────────────────
+1. Keep columns: Date, Day, Month, MonthName, Quarter, Year, YearMonth
+2. Add Custom Column - DayOfWeek:
+   = Date.DayOfWeekName([Date])
+3. Add Custom Column - IsCurrentYear:
+   = [Year] = Date.Year(DateTime.LocalNow())
+
+### Dimension Transformations (DimCustomer, DimProduct, etc.)
+────────────────────────────────────────────────────────────
+For each dimension:
+1. Trim all text columns (Transform → Format → Trim)
+2. Remove Duplicates on ID column
+
+
+## STEP 3: CREATE RELATIONSHIPS
+───────────────────────────────────────────────────────────────────────────────
+Model View → Drag to create these relationships:
+
+1. FactSales[OrderDate]      → DimDate[Date]         (Many-to-One)
+2. FactSales[CustomerID]     → DimCustomer[CustomerID] (Many-to-One)
+3. FactSales[ProductID]      → DimProduct[ProductID]  (Many-to-One)
+4. FactSales[SalespersonID]  → DimSalesperson[SalespersonID] (Many-to-One)
+5. FactSales[RegionID]       → DimRegion[RegionID]   (Many-to-One)
+
+All relationships: Single direction, Active
+
+
+## STEP 4: MARK DATE TABLE
+───────────────────────────
+1. Right-click DimDate table
+2. Mark as date table
+3. Confirm date column: DimDate[Date]
