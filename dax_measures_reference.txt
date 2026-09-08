@@ -1,0 +1,216 @@
+# ═════════════════════════════════════════════════════════════════════════════
+# POWER BI DAX MEASURES REFERENCE
+# ═════════════════════════════════════════════════════════════════════════════
+# Copy each measure into Power BI Desktop (Modeling → New Measure)
+# Format: Display Folder: [Folder Name] | Format: [Format Code]
+# ═════════════════════════════════════════════════════════════════════════════
+
+
+## CORE METRICS
+───────────────────────────────────────────────────────────────────────────
+
+[Measure 1]
+Name:              Total Sales
+Display Folder:    Core Metrics
+Format:            $#,##0.00
+
+DAX Code:
+```
+Total Sales = SUM(FactSales[Sales])
+```
+
+[Measure 2]
+Name:              Total Cost
+Display Folder:    Core Metrics
+Format:            $#,##0.00
+
+DAX Code:
+```
+Total Cost = SUMX(FactSales, FactSales[Cost] * FactSales[Quantity])
+```
+
+[Measure 3]
+Name:              Gross Profit
+Display Folder:    Core Metrics
+Format:            $#,##0.00
+
+DAX Code:
+```
+Gross Profit = [Total Sales] - [Total Cost]
+```
+
+[Measure 4]
+Name:              Gross Margin %
+Display Folder:    Core Metrics
+Format:            0.0%
+
+DAX Code:
+```
+Gross Margin % = IFERROR(DIVIDE([Gross Profit], [Total Sales], 0), 0)
+```
+
+[Measure 5]
+Name:              Total Orders
+Display Folder:    Core Metrics
+Format:            0
+
+DAX Code:
+```
+Total Orders = COUNTA(FactSales[OrderID])
+```
+
+[Measure 6]
+Name:              Total Quantity
+Display Folder:    Core Metrics
+Format:            0
+
+DAX Code:
+```
+Total Quantity = SUM(FactSales[Quantity])
+```
+
+[Measure 7]
+Name:              Total Customers
+Display Folder:    Core Metrics
+Format:            0
+
+DAX Code:
+```
+Total Customers = DISTINCTCOUNT(FactSales[CustomerID])
+```
+
+[Measure 8]
+Name:              Average Order Value
+Display Folder:    Core Metrics
+Format:            $#,##0.00
+
+DAX Code:
+```
+Average Order Value = DIVIDE([Total Sales], [Total Orders], 0)
+```
+
+## TIME INTELLIGENCE
+───────────────────────────────────────────────────────────────────────────
+
+[Measure 1]
+Name:              Sales YTD
+Display Folder:    Time Intelligence
+Format:            $#,##0.00
+
+DAX Code:
+```
+Sales YTD = TOTALYTD([Total Sales], DimDate[Date])
+```
+
+[Measure 2]
+Name:              Sales MTD
+Display Folder:    Time Intelligence
+Format:            $#,##0.00
+
+DAX Code:
+```
+Sales MTD = CALCULATE([Total Sales], DATESBETWEEN(DimDate[Date], DATE(YEAR(MAX(DimDate[Date])), MONTH(MAX(DimDate[Date])), 1), MAX(DimDate[Date])))
+```
+
+[Measure 3]
+Name:              Sales QTD
+Display Folder:    Time Intelligence
+Format:            $#,##0.00
+
+DAX Code:
+```
+Sales QTD = TOTALQTD([Total Sales], DimDate[Date])
+```
+
+[Measure 4]
+Name:              Sales PY
+Display Folder:    Time Intelligence
+Format:            $#,##0.00
+
+DAX Code:
+```
+Sales PY = CALCULATE([Total Sales], SAMEPERIODLASTYEAR(DimDate[Date]))
+```
+
+[Measure 5]
+Name:              YoY Sales %
+Display Folder:    Time Intelligence
+Format:            0.0%
+
+DAX Code:
+```
+YoY Sales % = IFERROR(DIVIDE([Total Sales] - [Sales PY], [Sales PY], 0), 0)
+```
+
+[Measure 6]
+Name:              Sales L12M
+Display Folder:    Time Intelligence
+Format:            $#,##0.00
+
+DAX Code:
+```
+Sales L12M = CALCULATE([Total Sales], FILTER(DimDate, DimDate[Date] >= MAX(DimDate[Date]) - 365 && DimDate[Date] <= MAX(DimDate[Date])))
+```
+
+[Measure 7]
+Name:              Sales L3M
+Display Folder:    Time Intelligence
+Format:            $#,##0.00
+
+DAX Code:
+```
+Sales L3M = CALCULATE([Total Sales], FILTER(DimDate, DimDate[Date] >= MAX(DimDate[Date]) - 90 && DimDate[Date] <= MAX(DimDate[Date])))
+```
+
+[Measure 8]
+Name:              Profit Growth %
+Display Folder:    Time Intelligence
+Format:            0.0%
+
+DAX Code:
+```
+Profit Growth % = IFERROR(DIVIDE([Gross Profit] - CALCULATE([Gross Profit], SAMEPERIODLASTYEAR(DimDate[Date])), CALCULATE([Gross Profit], SAMEPERIODLASTYEAR(DimDate[Date])), 0), 0)
+```
+
+## TARGET & KPIS
+───────────────────────────────────────────────────────────────────────────
+
+[Measure 1]
+Name:              Target Sales
+Display Folder:    Target & KPIs
+Format:            $#,##0.00
+
+DAX Code:
+```
+Target Sales = SUMX(VALUES(DimDate[Year], DimDate[Month]), CALCULATE(SUM(DimTarget[TargetSales]), MATCHALL(DimDate[Year], DimTarget[Year], DimDate[Month], DimTarget[Month])))
+```
+
+[Measure 2]
+Name:              Target Achievement %
+Display Folder:    Target & KPIs
+Format:            0.0%
+
+DAX Code:
+```
+Target Achievement % = IFERROR(DIVIDE([Total Sales], [Target Sales], 0), 0)
+```
+
+[Measure 3]
+Name:              Variance to Target
+Display Folder:    Target & KPIs
+Format:            $#,##0.00
+
+DAX Code:
+```
+Variance to Target = [Total Sales] - [Target Sales]
+```
+
+[Measure 4]
+Name:              Annual Forecast
+Display Folder:    Target & KPIs
+Format:            $#,##0.00
+
+DAX Code:
+```
+Annual Forecast = IF(MONTH(MAX(DimDate[Date])) > 0, ([Sales YTD] / MONTH(MAX(DimDate[Date]))) * 12, 0)
+```
